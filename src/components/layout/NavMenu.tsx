@@ -20,21 +20,24 @@ export function NavMenu({ isOpen, onClose, items }: NavMenuProps) {
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ease-in-out",
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <nav
         aria-label="주요 메뉴"
         className={cn(
-          "fixed z-50 bg-white shadow-xl transition-transform duration-200 ease-out",
+          "fixed z-50 bg-white shadow-xl transition-transform duration-300 ease-in-out",
+          // mobile: bottom sheet — slides up from the bottom edge
           "inset-x-0 bottom-0 max-h-[80vh] rounded-t-2xl",
-          isOpen ? "translate-y-0" : "translate-y-full",
+          isOpen ? "[transform:translateY(0)]" : "[transform:translateY(100%)]",
+          // desktop: left drawer — slides in from the left edge
           "md:inset-y-0 md:left-0 md:right-auto md:bottom-auto md:h-full md:w-72 md:max-h-none md:rounded-none",
-          isOpen ? "md:translate-x-0" : "md:-translate-x-full"
+          isOpen ? "md:[transform:translateX(0)]" : "md:[transform:translateX(-100%)]"
         )}
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
