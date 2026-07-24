@@ -12,17 +12,20 @@ export interface AnnotatedRow {
   submitFailureReason?: string;
 }
 
-export type UploadStage = "idle" | "parsed" | "confirming" | "submitting" | "done";
+export type UploadStage = "idle" | "mapping" | "confirming" | "submitting" | "done";
 
 export interface UploadState {
   stage: UploadStage;
   fileName: string | null;
+  rawHeaders: string[];
+  rawRows: Record<string, unknown>[];
   rows: AnnotatedRow[];
   createdCount: number | null;
 }
 
 export type UploadAction =
-  | { type: "PARSED"; fileName: string; rows: AnnotatedRow[] }
+  | { type: "RAW_PARSED"; fileName: string; headers: string[]; rows: Record<string, unknown>[] }
+  | { type: "PARSED"; rows: AnnotatedRow[] }
   | { type: "UPDATE_ROW"; rowNumber: number; row: AnnotatedRow }
   | { type: "SUBMIT_START" }
   | { type: "SUBMIT_SUCCESS"; createdCount: number }
@@ -33,14 +36,24 @@ export type UploadAction =
 export const initialUploadState: UploadState = {
   stage: "idle",
   fileName: null,
+  rawHeaders: [],
+  rawRows: [],
   rows: [],
   createdCount: null,
 };
 
 function reducer(state: UploadState, action: UploadAction): UploadState {
   switch (action.type) {
+    case "RAW_PARSED":
+      return {
+        ...initialUploadState,
+        stage: "mapping",
+        fileName: action.fileName,
+        rawHeaders: action.headers,
+        rawRows: action.rows,
+      };
     case "PARSED":
-      return { stage: "confirming", fileName: action.fileName, rows: action.rows, createdCount: null };
+      return { ...state, stage: "confirming", rows: action.rows, createdCount: null };
     case "UPDATE_ROW":
       return {
         ...state,

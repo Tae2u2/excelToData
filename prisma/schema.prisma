@@ -35,3 +35,11 @@ model Settlement {
   @@unique([orderNo, campaignName])
   @@index([paybackStatus])
 }
+
+model ImportMapping {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  mapping   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

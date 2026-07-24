@@ -1,37 +1,61 @@
 import * as XLSX from "xlsx";
 import type { RawSettlementRow } from "./validation/types";
+import type { HeaderFieldMapping } from "./fieldMapping";
 
-const HEADER_MAP: Record<string, keyof RawSettlementRow> = {
-  주문번호: "orderNo",
-  캠페인명: "campaignName",
-  구매자명: "buyerName",
-  "구매자 연락처": "buyerPhone",
-  구매금액: "purchaseAmount",
-  "페이백 금액": "paybackAmount",
-  은행명: "bankName",
-  계좌번호: "bankAccountNumber",
-  예금주: "bankAccountHolder",
-  메모: "memo",
-};
+export interface RawExcelSheet {
+  headers: string[];
+  rows: Record<string, unknown>[];
+}
 
-export const EXCEL_TEMPLATE_HEADERS = Object.keys(HEADER_MAP);
+export async function readExcelSheet(file: File): Promise<RawExcelSheet> {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const firstSheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[firstSheetName];
+  const table = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" });
+
+  if (table.length === 0) {
+    return { headers: [], rows: [] };
+  }
+
+  const headers = table[0].map((cell) => String(cell ?? "").trim()).filter((header) => header.length > 0);
+  const rows = table.slice(1).map((row) => {
+    const entry: Record<string, unknown> = {};
+    headers.forEach((header, index) => {
+      entry[header] = row[index];
+    });
+    return entry;
+  });
+
+  return { headers, rows };
+}
+
+function emptyRawRow(): RawSettlementRow {
+  return {
+    orderNo: "",
+    campaignName: "",
+    buyerName: "",
+    buyerPhone: "",
+    purchaseAmount: "",
+    paybackAmount: "",
+    bankName: "",
+    bankAccountNumber: "",
+    bankAccountHolder: "",
+    memo: "",
+  };
+}
 
 export interface ParsedExcelRow {
   rowNumber: number;
   data: RawSettlementRow;
 }
 
-export async function parseExcelFile(file: File): Promise<ParsedExcelRow[]> {
-  const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: "array" });
-  const firstSheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[firstSheetName];
-  const entries = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
-
-  return entries.map((entry, index) => {
-    const data = {} as RawSettlementRow;
-    for (const [koreanHeader, field] of Object.entries(HEADER_MAP)) {
-      const value = entry[koreanHeader];
+export function applyMapping(rows: Record<string, unknown>[], mapping: HeaderFieldMapping): ParsedExcelRow[] {
+  return rows.map((entry, index) => {
+    const data = emptyRawRow();
+    for (const [header, field] of Object.entries(mapping)) {
+      if (!field) continue;
+      const value = entry[header];
       data[field] = value === undefined || value === null ? "" : String(value).trim();
     }
     // Row 1 is the header, so the first data row is excel row 2.

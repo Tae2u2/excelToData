@@ -1,20 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { parseExcelFile, EXCEL_TEMPLATE_HEADERS } from "../parseExcelFile";
-import { runValidation } from "../validation/runValidation";
-import { settlementKeys } from "@/features/settlements/settlementKeys";
-import { useSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
-import type { Settlement } from "@/features/settlements/types";
-import { useUploadFlow, type AnnotatedRow } from "../uploadContext";
+import { readExcelSheet } from "../parseExcelFile";
+import { useUploadFlow } from "../uploadContext";
 
 export function UploadDropzone() {
   const { dispatch } = useUploadFlow();
-  const queryClient = useQueryClient();
-  // Calling the same hook/queryKey as the list page guarantees the cache used for the
-  // duplicate-diff rule below is actually populated, without a bespoke API call.
-  const { isLoading: isCacheLoading } = useSettlementsQuery();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,21 +13,13 @@ export function UploadDropzone() {
   const handleFile = async (file: File) => {
     setError(null);
     try {
-      const parsed = await parseExcelFile(file);
-      if (parsed.length === 0) {
+      const { headers, rows } = await readExcelSheet(file);
+      if (headers.length === 0 || rows.length === 0) {
         setError("엑셀 파일에서 데이터를 찾을 수 없습니다.");
         return;
       }
 
-      const cached = queryClient.getQueryData<Settlement[]>(settlementKeys.list()) ?? [];
-      const existingOrderKeys = new Set(cached.map((s) => `${s.orderNo}|${s.campaignName}`));
-
-      const rows: AnnotatedRow[] = parsed.map(({ rowNumber, data }) => {
-        const { cellResults, rowStatus } = runValidation(data, { existingOrderKeys });
-        return { rowNumber, data, cellResults, rowStatus };
-      });
-
-      dispatch({ type: "PARSED", fileName: file.name, rows });
+      dispatch({ type: "RAW_PARSED", fileName: file.name, headers, rows });
     } catch (err) {
       setError(err instanceof Error ? err.message : "엑셀 파일을 읽는 중 오류가 발생했습니다.");
     }
@@ -60,7 +43,7 @@ export function UploadDropzone() {
       }`}
     >
       <p className="text-sm text-slate-600">엑셀 파일을 여기로 드래그하거나 아래 버튼으로 선택하세요.</p>
-      <p className="text-xs text-slate-400">필수 열: {EXCEL_TEMPLATE_HEADERS.join(", ")}</p>
+      <p className="text-xs text-slate-400">엑셀을 올리면 다음 단계에서 열 매핑을 확인합니다.</p>
       <input
         ref={inputRef}
         type="file"
@@ -74,11 +57,10 @@ export function UploadDropzone() {
       />
       <button
         type="button"
-        disabled={isCacheLoading}
         onClick={() => inputRef.current?.click()}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
       >
-        {isCacheLoading ? "기존 데이터 확인 중..." : "파일 선택"}
+        파일 선택
       </button>
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>

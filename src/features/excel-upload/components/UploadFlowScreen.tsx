@@ -5,6 +5,7 @@ import { useUploadFlow } from "../uploadContext";
 import { useSubmitBulkSettlements, BulkSubmitError, type BulkSubmitRow } from "../useSubmitBulkSettlements";
 import { toCreateSettlementInput } from "../toCreateSettlementInput";
 import { UploadDropzone } from "./UploadDropzone";
+import { UploadMappingStep } from "./UploadMappingStep";
 import { UploadConfirmTable } from "./UploadConfirmTable";
 import { UploadSummaryBar } from "./UploadSummaryBar";
 import { UploadResultPanel } from "./UploadResultPanel";
@@ -49,6 +50,10 @@ export function UploadFlowScreen() {
 
   if (state.stage === "idle") {
     return <UploadDropzone />;
+  }
+
+  if (state.stage === "mapping") {
+    return <UploadMappingStep />;
   }
 
   return (
