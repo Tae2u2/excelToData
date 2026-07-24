@@ -15,7 +15,7 @@ interface DisplayRow extends RawSettlementRow {
 }
 
 const COLUMNS: ColumnDef<DisplayRow>[] = [
-  { field: "rowNumber", header: "행 번호" },
+  { field: "rowNumber", header: "행 번호", editable: false },
   { field: "orderNo", header: "주문번호" },
   { field: "campaignName", header: "캠페인명" },
   { field: "buyerName", header: "구매자명" },

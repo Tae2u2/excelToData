@@ -6,6 +6,8 @@ export interface CellValidationResult {
 export interface ColumnDef<TRow> {
   field: keyof TRow;
   header: string;
+  /** Set to false for a read-only index/gutter column (excluded from keyboard nav). Defaults to true. */
+  editable?: boolean;
 }
 
 export interface EditableRow<TRow> {
