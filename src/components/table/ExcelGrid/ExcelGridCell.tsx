@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 
 interface ExcelGridCellProps {
   id: string;
@@ -31,6 +31,7 @@ export function ExcelGridCell({
 }: ExcelGridCellProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
+  const cellRef = useRef<HTMLTableCellElement>(null);
 
   const commit = () => {
     onCommit(id, draft);
@@ -55,6 +56,9 @@ export function ExcelGridCell({
       if (editing) {
         e.preventDefault();
         commit();
+        // Committing unmounts the input, which drops focus entirely —
+        // reclaim it on the cell itself so arrow-key navigation keeps working.
+        cellRef.current?.focus();
       }
       return;
     }
@@ -68,6 +72,8 @@ export function ExcelGridCell({
         if (row === rowCount - 1) {
           e.preventDefault();
           onGrowRows();
+          // The new row's cell doesn't exist yet — wait for it to render.
+          setTimeout(() => focusCell(row + 1, col), 0);
           return;
         }
         move.row = 1;
@@ -79,6 +85,7 @@ export function ExcelGridCell({
         if (col === colCount - 1) {
           e.preventDefault();
           onGrowCols();
+          setTimeout(() => focusCell(row, col + 1), 0);
           return;
         }
         move.col = 1;
@@ -93,6 +100,7 @@ export function ExcelGridCell({
 
   return (
     <td
+      ref={cellRef}
       data-row={row}
       data-col={col}
       rowSpan={rowSpan}
@@ -108,7 +116,7 @@ export function ExcelGridCell({
         setEditing(true);
       }}
       onKeyDown={handleKeyDown}
-      className="h-8 min-w-[90px] border border-slate-200 align-top text-sm outline-none focus:ring-1 focus:ring-blue-400"
+      className="h-8 min-w-[90px] border border-slate-200 align-top text-sm outline outline-2 -outline-offset-2 outline-transparent focus-within:outline-green-300"
     >
       {editing ? (
         <input
