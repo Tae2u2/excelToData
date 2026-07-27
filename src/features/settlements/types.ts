@@ -13,6 +13,7 @@ export interface Settlement {
   bankAccountNumber: string;
   bankAccountHolder: string;
   memo: string | null;
+  extraFields: Record<string, string> | null;
   rejectedReason: string | null;
   sourceFile: string | null;
   paidAt: string | null;
@@ -32,6 +33,7 @@ export interface CreateSettlementInput {
   bankAccountNumber: string;
   bankAccountHolder: string;
   memo?: string | null;
+  extraFields?: Record<string, string> | null;
   sourceFile?: string | null;
 }
 

@@ -30,19 +30,12 @@ export async function readExcelSheet(file: File): Promise<RawExcelSheet> {
   return { headers, rows };
 }
 
-function emptyRawRow(): RawSettlementRow {
-  return {
-    orderNo: "",
-    campaignName: "",
-    buyerName: "",
-    buyerPhone: "",
-    purchaseAmount: "",
-    paybackAmount: "",
-    bankName: "",
-    bankAccountNumber: "",
-    bankAccountHolder: "",
-    memo: "",
-  };
+function emptyRawRow(fieldKeys: string[]): RawSettlementRow {
+  const row: RawSettlementRow = {};
+  for (const key of fieldKeys) {
+    row[key] = "";
+  }
+  return row;
 }
 
 export interface ParsedExcelRow {
@@ -50,9 +43,13 @@ export interface ParsedExcelRow {
   data: RawSettlementRow;
 }
 
-export function applyMapping(rows: Record<string, unknown>[], mapping: HeaderFieldMapping): ParsedExcelRow[] {
+export function applyMapping(
+  rows: Record<string, unknown>[],
+  mapping: HeaderFieldMapping,
+  fieldKeys: string[]
+): ParsedExcelRow[] {
   return rows.map((entry, index) => {
-    const data = emptyRawRow();
+    const data = emptyRawRow(fieldKeys);
     for (const [header, field] of Object.entries(mapping)) {
       if (!field) continue;
       const value = entry[header];

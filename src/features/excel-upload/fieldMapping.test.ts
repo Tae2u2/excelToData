@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  BUILT_IN_TARGET_FIELDS,
   DEFAULT_HEADER_MAP,
   getDuplicateFieldAssignments,
   getMissingRequiredFields,
   suggestMapping,
+  type TargetFieldConfig,
 } from "./fieldMapping";
 import type { ImportMappingProfile } from "./types";
 
@@ -56,20 +58,30 @@ describe("suggestMapping", () => {
 describe("getMissingRequiredFields", () => {
   it("returns no missing fields when every required field is mapped", () => {
     const { mapping } = suggestMapping(DEFAULT_HEADERS, []);
-    expect(getMissingRequiredFields(mapping)).toEqual([]);
+    expect(getMissingRequiredFields(mapping, BUILT_IN_TARGET_FIELDS)).toEqual([]);
   });
 
   it("reports required fields that have no mapped header", () => {
-    const missing = getMissingRequiredFields({ 주문번호: "orderNo" });
-    const missingFields = missing.map((f) => f.field);
+    const missing = getMissingRequiredFields({ 주문번호: "orderNo" }, BUILT_IN_TARGET_FIELDS);
+    const missingFields = missing.map((f) => f.key);
     expect(missingFields).toContain("campaignName");
     expect(missingFields).not.toContain("orderNo");
   });
 
   it("does not flag optional fields as missing", () => {
-    const missing = getMissingRequiredFields({});
-    expect(missing.map((f) => f.field)).not.toContain("buyerPhone");
-    expect(missing.map((f) => f.field)).not.toContain("memo");
+    const missing = getMissingRequiredFields({}, BUILT_IN_TARGET_FIELDS);
+    expect(missing.map((f) => f.key)).not.toContain("buyerPhone");
+    expect(missing.map((f) => f.key)).not.toContain("memo");
+  });
+
+  it("reports a required custom field that has no mapped header", () => {
+    const customFields: TargetFieldConfig[] = [
+      ...BUILT_IN_TARGET_FIELDS,
+      { key: "custom_1", label: "배송메모", required: true },
+    ];
+    const { mapping } = suggestMapping(DEFAULT_HEADERS, []);
+    const missing = getMissingRequiredFields(mapping, customFields);
+    expect(missing.map((f) => f.key)).toEqual(["custom_1"]);
   });
 });
 

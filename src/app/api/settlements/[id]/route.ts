@@ -14,7 +14,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   try {
     const settlement = await prisma.settlement.update({
       where: { id: Number(id) },
-      data: body,
+      data: { ...body, extraFields: body.extraFields ?? undefined },
     });
     return NextResponse.json(settlement);
   } catch (err) {

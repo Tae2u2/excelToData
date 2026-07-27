@@ -1,3 +1,6 @@
+"use client";
+
+import { useTargetFieldsQuery } from "@/features/target-fields/api/useTargetFieldsQuery";
 import type { Settlement } from "@/features/settlements/types";
 
 interface SettlementDetailModalProps {
@@ -12,6 +15,10 @@ const STATUS_LABEL: Record<Settlement["paybackStatus"], string> = {
 };
 
 export default function SettlementDetailModal({ row, onClose }: SettlementDetailModalProps) {
+  const { data: targetFields } = useTargetFieldsQuery();
+  const extraFieldEntries = Object.entries(row.extraFields ?? {});
+  const labelByKey = new Map((targetFields ?? []).map((f) => [f.key, f.label]));
+
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold">정산 상세 · #{row.id}</h2>
@@ -29,6 +36,9 @@ export default function SettlementDetailModal({ row, onClose }: SettlementDetail
         <Row label="예금주" value={row.bankAccountHolder} />
         {row.rejectedReason && <Row label="반려 사유" value={row.rejectedReason} />}
         <Row label="메모" value={row.memo || "-"} />
+        {extraFieldEntries.map(([key, value]) => (
+          <Row key={key} label={labelByKey.get(key) ?? key} value={value} />
+        ))}
         <Row label="등록 파일" value={row.sourceFile || "직접 등록"} />
         <Row label="지급일" value={row.paidAt ? new Date(row.paidAt).toLocaleDateString("ko-KR") : "-"} />
         <Row label="등록일" value={new Date(row.createdAt).toLocaleString("ko-KR")} />

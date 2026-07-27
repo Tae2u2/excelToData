@@ -26,6 +26,7 @@ model Settlement {
   bankAccountNumber String
   bankAccountHolder String
   memo              String?
+  extraFields       Json?
   rejectedReason    String?
   sourceFile        String?
   paidAt            DateTime?
@@ -40,6 +41,17 @@ model ImportMapping {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   mapping   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TargetField {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  label     String
+  required  Boolean  @default(false)
+  isBuiltIn Boolean  @default(false)
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

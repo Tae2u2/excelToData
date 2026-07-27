@@ -14,7 +14,9 @@ export async function POST(req: Request) {
   const body: CreateSettlementInput = await req.json();
 
   try {
-    const settlement = await prisma.settlement.create({ data: body });
+    const settlement = await prisma.settlement.create({
+      data: { ...body, extraFields: body.extraFields ?? undefined },
+    });
     return NextResponse.json(settlement, { status: 201 });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {

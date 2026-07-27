@@ -5,13 +5,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUploadFlow } from "../uploadContext";
 import { useImportMappingsQuery } from "../api/useImportMappingsQuery";
 import { useCreateImportMapping } from "../api/useCreateImportMapping";
+import { useTargetFieldsQuery } from "@/features/target-fields/api/useTargetFieldsQuery";
 import { settlementKeys } from "@/features/settlements/settlementKeys";
 import { useSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
 import type { Settlement } from "@/features/settlements/types";
 import { applyMapping } from "../parseExcelFile";
 import { runValidation } from "../validation/runValidation";
 import {
-  TARGET_FIELDS,
   applyProfile,
   getDuplicateFieldAssignments,
   getMissingRequiredFields,
@@ -23,6 +23,7 @@ export function UploadMappingStep() {
   const { state, dispatch } = useUploadFlow();
   const queryClient = useQueryClient();
   const { data: savedProfiles, isLoading: profilesLoading } = useImportMappingsQuery();
+  const { data: targetFields, isLoading: targetFieldsLoading } = useTargetFieldsQuery();
   const { isLoading: settlementsLoading } = useSettlementsQuery();
   const createMapping = useCreateImportMapping();
 
@@ -58,14 +59,15 @@ export function UploadMappingStep() {
     setMatchedProfileName(profile.name);
   };
 
-  const missingFields = getMissingRequiredFields(mapping);
+  const missingFields = getMissingRequiredFields(mapping, targetFields ?? []);
   const duplicateFields = getDuplicateFieldAssignments(mapping);
-  const canProceed = missingFields.length === 0 && duplicateFields.length === 0 && !settlementsLoading;
+  const canProceed =
+    missingFields.length === 0 && duplicateFields.length === 0 && !settlementsLoading && !targetFieldsLoading;
 
   const handleBack = () => dispatch({ type: "RESET" });
 
   const handleNext = async () => {
-    if (!canProceed) return;
+    if (!canProceed || !targetFields) return;
     setSaveError(null);
 
     if (saveAsProfile) {
@@ -88,16 +90,17 @@ export function UploadMappingStep() {
     const cached = queryClient.getQueryData<Settlement[]>(settlementKeys.list()) ?? [];
     const existingOrderKeys = new Set(cached.map((s) => `${s.orderNo}|${s.campaignName}`));
 
-    const parsed = applyMapping(state.rawRows, mapping);
+    const fieldKeys = targetFields.map((f) => f.key);
+    const parsed = applyMapping(state.rawRows, mapping, fieldKeys);
     const rows = parsed.map(({ rowNumber, data }) => {
-      const { cellResults, rowStatus } = runValidation(data, { existingOrderKeys });
+      const { cellResults, rowStatus } = runValidation(data, { existingOrderKeys }, targetFields);
       return { rowNumber, data, cellResults, rowStatus };
     });
 
     dispatch({ type: "PARSED", rows });
   };
 
-  if (profilesLoading) {
+  if (profilesLoading || targetFieldsLoading) {
     return <p className="text-sm text-slate-500">매핑 프로필을 불러오는 중...</p>;
   }
 
@@ -153,8 +156,8 @@ export function UploadMappingStep() {
                     className="w-full max-w-xs rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                   >
                     <option value="">매핑 안 함</option>
-                    {TARGET_FIELDS.map((config) => (
-                      <option key={config.field} value={config.field}>
+                    {(targetFields ?? []).map((config) => (
+                      <option key={config.key} value={config.key}>
                         {config.label}
                         {config.required ? " *" : ""}
                       </option>
@@ -176,7 +179,10 @@ export function UploadMappingStep() {
         <p className="text-sm text-red-600">
           같은 항목에 여러 열이 매핑되어 있습니다:{" "}
           {duplicateFields
-            .map((d) => `${TARGET_FIELDS.find((f) => f.field === d.field)?.label ?? d.field} (${d.headers.join(", ")})`)
+            .map(
+              (d) =>
+                `${(targetFields ?? []).find((f) => f.key === d.field)?.label ?? d.field} (${d.headers.join(", ")})`
+            )
             .join(" / ")}
         </p>
       )}

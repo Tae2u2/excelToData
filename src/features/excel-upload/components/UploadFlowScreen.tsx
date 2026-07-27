@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useUploadFlow } from "../uploadContext";
 import { useSubmitBulkSettlements, BulkSubmitError, type BulkSubmitRow } from "../useSubmitBulkSettlements";
 import { toCreateSettlementInput } from "../toCreateSettlementInput";
+import { useTargetFieldsQuery } from "@/features/target-fields/api/useTargetFieldsQuery";
 import { UploadDropzone } from "./UploadDropzone";
 import { UploadMappingStep } from "./UploadMappingStep";
 import { UploadConfirmTable } from "./UploadConfirmTable";
@@ -13,6 +14,7 @@ import { UploadResultPanel } from "./UploadResultPanel";
 export function UploadFlowScreen() {
   const { state, dispatch } = useUploadFlow();
   const submitMutation = useSubmitBulkSettlements();
+  const { data: targetFields } = useTargetFieldsQuery();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validCount = state.rows.filter((row) => row.rowStatus === "valid").length;
@@ -26,7 +28,7 @@ export function UploadFlowScreen() {
       .filter((row) => row.rowStatus === "valid")
       .map((row) => ({
         rowNumber: row.rowNumber,
-        data: toCreateSettlementInput(row.data, state.fileName ?? ""),
+        data: toCreateSettlementInput(row.data, state.fileName ?? "", targetFields ?? []),
       }));
 
     try {

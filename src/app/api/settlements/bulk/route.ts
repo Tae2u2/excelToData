@@ -46,7 +46,9 @@ export async function POST(req: Request) {
         throw new BulkValidationError(failures);
       }
 
-      await tx.settlement.createMany({ data: body.rows.map((r) => r.data) });
+      await tx.settlement.createMany({
+        data: body.rows.map((r) => ({ ...r.data, extraFields: r.data.extraFields ?? undefined })),
+      });
       return body.rows.length;
     });
 
