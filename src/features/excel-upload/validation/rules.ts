@@ -40,11 +40,21 @@ export const rules: FieldRule[] = [
     },
   },
   {
+    field: "bankName",
+    validate: (row) =>
+      row.bankName.trim() ? { ok: true } : { ok: false, message: "은행명은 필수입니다." },
+  },
+  {
     field: "bankAccountNumber",
     validate: (row) =>
       /^[0-9-]{6,20}$/.test(row.bankAccountNumber.trim())
         ? { ok: true }
         : { ok: false, message: "계좌번호 형식이 올바르지 않습니다." },
+  },
+  {
+    field: "bankAccountHolder",
+    validate: (row) =>
+      row.bankAccountHolder.trim() ? { ok: true } : { ok: false, message: "예금주는 필수입니다." },
   },
   {
     field: "orderNo",

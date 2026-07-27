@@ -87,6 +87,16 @@ describe("runValidation", () => {
     expect(result.cellResults.bankAccountNumber?.ok).toBe(true);
   });
 
+  it("flags a missing bankName as required regardless of the target field's required flag", () => {
+    const result = runValidation(buildRow({ bankName: "" }), emptyContext());
+    expect(result.cellResults.bankName).toEqual({ ok: false, message: "은행명은 필수입니다." });
+  });
+
+  it("flags a missing bankAccountHolder as required regardless of the target field's required flag", () => {
+    const result = runValidation(buildRow({ bankAccountHolder: "" }), emptyContext());
+    expect(result.cellResults.bankAccountHolder).toEqual({ ok: false, message: "예금주는 필수입니다." });
+  });
+
   it("flags a duplicate orderNo/campaignName pair found in the query cache", () => {
     const ctx: ValidationRuleContext = {
       existingOrderKeys: new Set(["ORD-1000|2026년 3월 공동구매"]),

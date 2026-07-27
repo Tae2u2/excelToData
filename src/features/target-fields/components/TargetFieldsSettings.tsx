@@ -32,13 +32,17 @@ export function TargetFieldsSettings() {
     updateMutation.mutate({ id: field.id, input: { label: label.trim() } });
   };
 
+  const toggleRequired = (field: TargetField) => {
+    updateMutation.mutate({ id: field.id, input: { required: !field.required } });
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-2">
         <div>
           <h3 className="text-base font-semibold text-slate-800">기본 항목</h3>
           <p className="mt-1 text-sm text-slate-500">
-            정산 데이터의 고정 항목입니다. 이름은 바꿀 수 있지만, 필수 여부는 변경할 수 없습니다.
+            정산 데이터의 고정 항목입니다. 이름과 필수 여부를 모두 바꿀 수 있습니다.
           </p>
         </div>
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
@@ -62,13 +66,15 @@ export function TargetFieldsSettings() {
                     />
                   </td>
                   <td className="px-3.5 py-2.5">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        field.required ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {field.required ? "필수" : "선택"}
-                    </span>
+                    <label className="flex items-center gap-2 text-sm text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={field.required}
+                        onChange={() => toggleRequired(field)}
+                        className="h-4 w-4"
+                      />
+                      필수
+                    </label>
                   </td>
                 </tr>
               ))}
@@ -77,7 +83,7 @@ export function TargetFieldsSettings() {
         </div>
       </section>
 
-      <CustomFieldsSection customFields={customFields} saveLabel={saveLabel} />
+      <CustomFieldsSection customFields={customFields} saveLabel={saveLabel} toggleRequired={toggleRequired} />
     </div>
   );
 }
@@ -85,9 +91,11 @@ export function TargetFieldsSettings() {
 function CustomFieldsSection({
   customFields,
   saveLabel,
+  toggleRequired,
 }: {
   customFields: TargetField[];
   saveLabel: (field: TargetField, label: string) => void;
+  toggleRequired: (field: TargetField) => void;
 }) {
   const updateMutation = useUpdateTargetField();
   const createMutation = useCreateTargetField();
@@ -111,10 +119,6 @@ function CustomFieldsSection({
     } catch (err) {
       setAddError(err instanceof Error ? err.message : "매핑 항목 추가에 실패했습니다.");
     }
-  };
-
-  const toggleRequired = (field: TargetField) => {
-    updateMutation.mutate({ id: field.id, input: { required: !field.required } });
   };
 
   const move = (index: number, direction: -1 | 1) => {

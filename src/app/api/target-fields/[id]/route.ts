@@ -15,11 +15,11 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     return NextResponse.json({ message: "항목을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  const data: UpdateTargetFieldInput = { label: body.label?.trim(), sortOrder: body.sortOrder };
-  // Built-in fields map to NOT NULL Settlement columns, so their required-ness can't be relaxed here.
-  if (!existing.isBuiltIn) {
-    data.required = body.required;
-  }
+  const data: UpdateTargetFieldInput = {
+    label: body.label?.trim(),
+    sortOrder: body.sortOrder,
+    required: body.required,
+  };
 
   try {
     const targetField = await prisma.targetField.update({
