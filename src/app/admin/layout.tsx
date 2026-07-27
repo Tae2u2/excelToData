@@ -7,6 +7,7 @@ import { NavMenu, type NavItem } from "@/components/layout/NavMenu";
 const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/admin/settlements", label: "정산 목록" },
   { href: "/admin/settlements/upload", label: "엑셀 업로드" },
+  { href: "/admin/free-input", label: "자유 입력" },
   { href: "/admin/target-fields", label: "매핑 항목 설정" },
   { href: "/", label: "역할 변경" },
 ];
