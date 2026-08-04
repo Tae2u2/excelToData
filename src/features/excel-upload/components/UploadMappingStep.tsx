@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useUploadFlow } from "../uploadContext";
 import { useImportMappingsQuery } from "../api/useImportMappingsQuery";
 import { useCreateImportMapping } from "../api/useCreateImportMapping";
 import { useTargetFieldsQuery } from "@/features/target-fields/api/useTargetFieldsQuery";
-import { settlementKeys } from "@/features/settlements/settlementKeys";
-import { useSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
-import type { Settlement } from "@/features/settlements/types";
+import { useAllSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
 import { applyMapping } from "../parseExcelFile";
 import { runValidation } from "../validation/runValidation";
 import {
@@ -21,10 +18,9 @@ import {
 
 export function UploadMappingStep() {
   const { state, dispatch } = useUploadFlow();
-  const queryClient = useQueryClient();
   const { data: savedProfiles, isLoading: profilesLoading } = useImportMappingsQuery();
   const { data: targetFields, isLoading: targetFieldsLoading } = useTargetFieldsQuery();
-  const { isLoading: settlementsLoading } = useSettlementsQuery();
+  const { data: allSettlements, isLoading: settlementsLoading } = useAllSettlementsQuery();
   const createMapping = useCreateImportMapping();
 
   const [mapping, setMapping] = useState<HeaderFieldMapping>({});
@@ -87,8 +83,9 @@ export function UploadMappingStep() {
       }
     }
 
-    const cached = queryClient.getQueryData<Settlement[]>(settlementKeys.list()) ?? [];
-    const existingOrderKeys = new Set(cached.map((s) => `${s.orderNo}|${s.campaignName}`));
+    const existingOrderKeys = new Set(
+      (allSettlements ?? []).map((s) => `${s.orderNo}|${s.campaignName}`),
+    );
 
     const fieldKeys = targetFields.map((f) => f.key);
     const parsed = applyMapping(state.rawRows, mapping, fieldKeys);

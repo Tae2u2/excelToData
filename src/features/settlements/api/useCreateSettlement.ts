@@ -21,7 +21,7 @@ export function useCreateSettlement() {
   return useMutation({
     mutationFn: createSettlement,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settlementKeys.list() });
+      queryClient.invalidateQueries({ queryKey: settlementKeys.all });
     },
   });
 }

@@ -29,6 +29,14 @@ export interface ModalPayloadMap {
     rows: Settlement[];
     onConfirm: () => Promise<unknown>;
   };
+  "settlement/assign-group": {
+    rows: Settlement[];
+    onSubmit: (groupId: number) => Promise<unknown>;
+  };
+  "settlement/remove-from-group": {
+    rows: Settlement[];
+    onConfirm: () => Promise<unknown>;
+  };
 }
 
 export type ModalType = keyof ModalPayloadMap;

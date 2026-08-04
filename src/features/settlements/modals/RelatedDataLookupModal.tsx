@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { settlementKeys } from "@/features/settlements/settlementKeys";
+import { useAllSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
 import type { Settlement } from "@/features/settlements/types";
 
 interface RelatedDataLookupModalProps {
@@ -17,19 +16,20 @@ const STATUS_LABEL: Record<Settlement["paybackStatus"], string> = {
 };
 
 export default function RelatedDataLookupModal({ row, onClose }: RelatedDataLookupModalProps) {
-  const queryClient = useQueryClient();
+  const { data: allSettlements } = useAllSettlementsQuery();
 
   const relatedRows = useMemo(() => {
-    const cached = queryClient.getQueryData<Settlement[]>(settlementKeys.list()) ?? [];
-    return cached.filter((s) => s.buyerName === row.buyerName && s.id !== row.id);
-  }, [queryClient, row.buyerName, row.id]);
+    return (allSettlements ?? []).filter(
+      (s) => s.buyerName === row.buyerName && s.id !== row.id,
+    );
+  }, [allSettlements, row.buyerName, row.id]);
 
   return (
     <div className="flex flex-col gap-4">
       <div>
         <h2 className="text-lg font-semibold">연관 데이터 조회</h2>
         <p className="text-sm text-slate-500">
-          <span className="font-medium">{row.buyerName}</span>님의 다른 정산 내역 (이미 로드된 목록 캐시 기준)
+          <span className="font-medium">{row.buyerName}</span>님의 다른 정산 내역
         </p>
       </div>
 

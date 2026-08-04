@@ -14,14 +14,14 @@ enum PaybackStatus {
 }
 
 model Settlement {
-  id                Int           @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   orderNo           String
   campaignName      String
   buyerName         String
   buyerPhone        String?
   purchaseAmount    Int
   paybackAmount     Int
-  paybackStatus     PaybackStatus @default(PENDING)
+  paybackStatus     PaybackStatus    @default(PENDING)
   bankName          String
   bankAccountNumber String
   bankAccountHolder String
@@ -30,11 +30,23 @@ model Settlement {
   rejectedReason    String?
   sourceFile        String?
   paidAt            DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  groupId           Int?
+  group             SettlementGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   @@unique([orderNo, campaignName])
   @@index([paybackStatus])
+  @@index([groupId])
+}
+
+model SettlementGroup {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  memo        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  settlements Settlement[]
 }
 
 model ImportMapping {

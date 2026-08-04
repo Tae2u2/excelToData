@@ -15,7 +15,7 @@ export function useDeleteSettlement() {
   return useMutation({
     mutationFn: deleteSettlement,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settlementKeys.list() });
+      queryClient.invalidateQueries({ queryKey: settlementKeys.all });
     },
   });
 }

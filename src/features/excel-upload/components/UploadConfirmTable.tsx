@@ -1,10 +1,8 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { EditableCellTable } from "@/components/table/EditableCellTable/EditableCellTable";
 import type { ColumnDef, EditableRow } from "@/components/table/EditableCellTable/types";
-import { settlementKeys } from "@/features/settlements/settlementKeys";
-import type { Settlement } from "@/features/settlements/types";
+import { useAllSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
 import { useTargetFieldsQuery } from "@/features/target-fields/api/useTargetFieldsQuery";
 import { runValidation } from "../validation/runValidation";
 import type { RawSettlementRow } from "../validation/types";
@@ -17,7 +15,7 @@ interface DisplayRow extends RawSettlementRow {
 
 export function UploadConfirmTable() {
   const { state, dispatch } = useUploadFlow();
-  const queryClient = useQueryClient();
+  const { data: allSettlements } = useAllSettlementsQuery();
   const { data: targetFields } = useTargetFieldsQuery();
 
   const columns: ColumnDef<DisplayRow>[] = [
@@ -45,8 +43,9 @@ export function UploadConfirmTable() {
 
     const nextData: RawSettlementRow = { ...target.data, [field]: value };
 
-    const cached = queryClient.getQueryData<Settlement[]>(settlementKeys.list()) ?? [];
-    const existingOrderKeys = new Set(cached.map((s) => `${s.orderNo}|${s.campaignName}`));
+    const existingOrderKeys = new Set(
+      (allSettlements ?? []).map((s) => `${s.orderNo}|${s.campaignName}`),
+    );
     const { cellResults, rowStatus } = runValidation(nextData, { existingOrderKeys }, targetFields ?? []);
 
     dispatch({

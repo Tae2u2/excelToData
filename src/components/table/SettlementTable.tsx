@@ -25,9 +25,14 @@ interface SettlementTableProps {
   onRowAction: (actionKey: string, row: Settlement) => void;
 }
 
-export function SettlementTable({ rows, actions, onRowAction }: SettlementTableProps) {
+export function SettlementTable({
+  rows,
+  actions,
+  onRowAction,
+}: SettlementTableProps) {
   const { isSelected, toggleAll } = useSelection();
-  const allSelected = rows.length > 0 && rows.every((row) => isSelected(row.id));
+  const allSelected =
+    rows.length > 0 && rows.every((row) => isSelected(row.id));
 
   if (rows.length === 0) {
     return (
@@ -38,8 +43,8 @@ export function SettlementTable({ rows, actions, onRowAction }: SettlementTableP
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-      <table className="w-full min-w-[720px] text-sm">
+    <div className="overflow-x-auto border border-slate-200 bg-white">
+      <table className="w-full text-sm">
         <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
           <tr>
             <th className="w-10 px-4 py-3">
@@ -48,12 +53,13 @@ export function SettlementTable({ rows, actions, onRowAction }: SettlementTableP
                 aria-label="전체 선택"
                 checked={allSelected}
                 onChange={() => toggleAll(rows)}
-                className="h-4 w-4 rounded border-slate-300"
+                className="h-6 w-6 rounded border-slate-300"
               />
             </th>
             <th className="px-4 py-3">주문번호</th>
             <th className="px-4 py-3">캠페인</th>
             <th className="px-4 py-3">구매자</th>
+            <th className="px-4 py-3">그룹</th>
             <th className="px-4 py-3 text-right">구매금액</th>
             <th className="px-4 py-3 text-right">페이백</th>
             <th className="px-4 py-3">상태</th>
@@ -84,7 +90,10 @@ function SettlementTableRow({
   actions: RowAction[];
   onAction: (actionKey: string, row: Settlement) => void;
 }) {
-  const { menu, openContextMenu, openSheet, close, select } = useRowActionsMenu(row, onAction);
+  const { menu, openContextMenu, openSheet, close, select } = useRowActionsMenu(
+    row,
+    onAction,
+  );
   const { isSelected, toggle } = useSelection();
 
   return (
@@ -96,16 +105,31 @@ function SettlementTableRow({
             aria-label={`${row.buyerName} · ${row.orderNo} 선택`}
             checked={isSelected(row.id)}
             onChange={() => toggle(row)}
-            className="h-4 w-4 rounded border-slate-300"
+            className="h-6 w-6 rounded cursor-pointer border-slate-300"
           />
         </td>
         <td className="px-4 py-3 font-medium text-slate-800">{row.orderNo}</td>
         <td className="px-4 py-3 text-slate-600">{row.campaignName}</td>
         <td className="px-4 py-3 text-slate-600">{row.buyerName}</td>
-        <td className="px-4 py-3 text-right text-slate-600">{row.purchaseAmount.toLocaleString()}원</td>
-        <td className="px-4 py-3 text-right text-slate-600">{row.paybackAmount.toLocaleString()}원</td>
+        <td className="px-4 py-3 text-slate-600">
+          {row.group ? (
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+              {row.group.name}
+            </span>
+          ) : (
+            <span className="text-slate-300">-</span>
+          )}
+        </td>
+        <td className="px-4 py-3 text-right text-slate-600">
+          {row.purchaseAmount.toLocaleString()}원
+        </td>
+        <td className="px-4 py-3 text-right text-slate-600">
+          {row.paybackAmount.toLocaleString()}원
+        </td>
         <td className="px-4 py-3">
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[row.paybackStatus]}`}>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[row.paybackStatus]}`}
+          >
             {STATUS_LABEL[row.paybackStatus]}
           </span>
         </td>
@@ -114,7 +138,7 @@ function SettlementTableRow({
             type="button"
             onClick={openSheet}
             aria-label="더보기"
-            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-800 hover:bg-slate-100 cursor-pointer"
           >
             ⋮
           </button>
@@ -125,8 +149,14 @@ function SettlementTableRow({
         menu.variant === "context" &&
         typeof document !== "undefined" &&
         createPortal(
-          <ContextMenu x={menu.x ?? 0} y={menu.y ?? 0} actions={actions} onSelect={select} onClose={close} />,
-          document.body
+          <ContextMenu
+            x={menu.x ?? 0}
+            y={menu.y ?? 0}
+            actions={actions}
+            onSelect={select}
+            onClose={close}
+          />,
+          document.body,
         )}
 
       {menu.open &&
@@ -140,7 +170,7 @@ function SettlementTableRow({
             onSelect={select}
             onClose={close}
           />,
-          document.body
+          document.body,
         )}
     </>
   );

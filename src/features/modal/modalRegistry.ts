@@ -14,4 +14,6 @@ export const MODAL_COMPONENTS: {
   "settlement/bulk-detail": lazy(() => import("@/features/settlements/modals/BulkDetailModal")),
   "settlement/bulk-delete": lazy(() => import("@/features/settlements/modals/BulkDeleteModal")),
   "settlement/bulk-mark-paid": lazy(() => import("@/features/settlements/modals/BulkMarkPaidModal")),
+  "settlement/assign-group": lazy(() => import("@/features/settlements/modals/AssignGroupModal")),
+  "settlement/remove-from-group": lazy(() => import("@/features/settlements/modals/RemoveFromGroupModal")),
 };

@@ -8,6 +8,7 @@ const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/admin/settlements", label: "정산 목록" },
   { href: "/admin/settlements/upload", label: "엑셀 업로드" },
   { href: "/admin/free-input", label: "자유 입력" },
+  { href: "/admin/groups", label: "그룹 관리" },
   { href: "/admin/target-fields", label: "매핑 항목 설정" },
   { href: "/", label: "역할 변경" },
 ];
@@ -17,9 +18,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <AppHeader title="공동구매 페이백 관리자" onMenuClick={() => setNavOpen(true)} />
-      <NavMenu isOpen={navOpen} onClose={() => setNavOpen(false)} items={ADMIN_NAV_ITEMS} />
-      <main className="flex-1 px-4 py-6">{children}</main>
+      <AppHeader
+        title="공동구매 페이백 관리자"
+        onMenuClick={() => setNavOpen(true)}
+      />
+      <NavMenu
+        isOpen={navOpen}
+        onClose={() => setNavOpen(false)}
+        items={ADMIN_NAV_ITEMS}
+      />
+      <main className="bg-white p-5 w-full">{children}</main>
     </div>
   );
 }

@@ -15,6 +15,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     const settlement = await prisma.settlement.update({
       where: { id: Number(id) },
       data: { ...body, extraFields: body.extraFields ?? undefined },
+      include: { group: { select: { id: true, name: true } } },
     });
     return NextResponse.json(settlement);
   } catch (err) {

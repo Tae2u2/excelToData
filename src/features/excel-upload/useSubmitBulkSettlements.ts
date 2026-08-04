@@ -45,7 +45,7 @@ export function useSubmitBulkSettlements() {
   return useMutation({
     mutationFn: submitBulkSettlements,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settlementKeys.list() });
+      queryClient.invalidateQueries({ queryKey: settlementKeys.all });
     },
   });
 }

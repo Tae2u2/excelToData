@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSettlementsQuery } from "@/features/settlements/api/useSettlementsQuery";
 import { useUpdateSettlement } from "@/features/settlements/api/useUpdateSettlement";
 import { useModal } from "@/features/modal/ModalContext";
@@ -9,6 +10,9 @@ import { SelectionToolbar, type ToolbarAction } from "@/features/settlements/com
 import type { RowAction } from "@/components/ui/ContextMenu";
 import type { Settlement } from "@/features/settlements/types";
 import { Spinner } from "@/components/ui/Spinner";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PAGE_SIZE = 20;
 
 function rowActionsFor(row: Settlement): RowAction[] {
   const actions: RowAction[] = [{ key: "detail", label: "상세보기" }];
@@ -32,10 +36,16 @@ export default function StaffSettlementsPage() {
 }
 
 function StaffSettlementsContent() {
-  const { data: rows, isLoading } = useSettlementsQuery();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useSettlementsQuery({ page, pageSize: PAGE_SIZE });
   const updateMutation = useUpdateSettlement();
   const { open } = useModal();
   const { selectedRows, clear } = useSelection();
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    clear();
+  };
 
   const handleRowAction = (actionKey: string, row: Settlement) => {
     switch (actionKey) {
@@ -87,7 +97,10 @@ function StaffSettlementsContent() {
           <Spinner />
         </div>
       ) : (
-        <SettlementTable rows={rows ?? []} actions={rowActionsFor} onRowAction={handleRowAction} />
+        <>
+          <SettlementTable rows={data?.data ?? []} actions={rowActionsFor} onRowAction={handleRowAction} />
+          <Pagination page={page} totalPages={data?.totalPages ?? 1} onPageChange={handlePageChange} />
+        </>
       )}
     </div>
   );
