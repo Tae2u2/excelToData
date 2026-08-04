@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         onClose={() => setNavOpen(false)}
         items={ADMIN_NAV_ITEMS}
       />
-      <main className="bg-white p-5 w-full">{children}</main>
+      <main className="bg-white p-5 w-full min-h-screen">{children}</main>
     </div>
   );
 }

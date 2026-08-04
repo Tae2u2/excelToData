@@ -5,7 +5,7 @@ import { UploadFlowScreen } from "@/features/excel-upload/components/UploadFlowS
 
 export default function ExcelUploadPage() {
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4">
+    <div className="mx-auto flex max-w-8xl flex-col gap-4">
       <h2 className="text-lg font-semibold text-slate-800">엑셀 일괄 등록</h2>
       <UploadFlowProvider>
         <UploadFlowScreen />

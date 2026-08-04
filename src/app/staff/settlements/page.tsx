@@ -5,8 +5,14 @@ import { useSettlementsQuery } from "@/features/settlements/api/useSettlementsQu
 import { useUpdateSettlement } from "@/features/settlements/api/useUpdateSettlement";
 import { useModal } from "@/features/modal/ModalContext";
 import { SettlementTable } from "@/components/table/SettlementTable";
-import { SelectionProvider, useSelection } from "@/features/settlements/selection/SelectionContext";
-import { SelectionToolbar, type ToolbarAction } from "@/features/settlements/components/SelectionToolbar";
+import {
+  SelectionProvider,
+  useSelection,
+} from "@/features/settlements/selection/SelectionContext";
+import {
+  SelectionToolbar,
+  type ToolbarAction,
+} from "@/features/settlements/components/SelectionToolbar";
 import type { RowAction } from "@/components/ui/ContextMenu";
 import type { Settlement } from "@/features/settlements/types";
 import { Spinner } from "@/components/ui/Spinner";
@@ -37,7 +43,10 @@ export default function StaffSettlementsPage() {
 
 function StaffSettlementsContent() {
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useSettlementsQuery({ page, pageSize: PAGE_SIZE });
+  const { data, isLoading } = useSettlementsQuery({
+    page,
+    pageSize: PAGE_SIZE,
+  });
   const updateMutation = useUpdateSettlement();
   const { open } = useModal();
   const { selectedRows, clear } = useSelection();
@@ -70,14 +79,19 @@ function StaffSettlementsContent() {
         open("settlement/bulk-mark-paid", {
           rows: selectedRows,
           onConfirm: async () => {
-            const pending = selectedRows.filter((row) => row.paybackStatus === "PENDING");
+            const pending = selectedRows.filter(
+              (row) => row.paybackStatus === "PENDING",
+            );
             await Promise.all(
               pending.map((row) =>
                 updateMutation.mutateAsync({
                   id: row.id,
-                  input: { paybackStatus: "PAID", paidAt: new Date().toISOString() },
-                })
-              )
+                  input: {
+                    paybackStatus: "PAID",
+                    paidAt: new Date().toISOString(),
+                  },
+                }),
+              ),
             );
             clear();
           },
@@ -87,10 +101,13 @@ function StaffSettlementsContent() {
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4">
+    <div className="mx-auto flex max-w-8xl flex-col gap-4">
       <h2 className="text-lg font-semibold text-slate-800">정산 목록 (조회)</h2>
 
-      <SelectionToolbar actions={TOOLBAR_ACTIONS} onAction={handleToolbarAction} />
+      <SelectionToolbar
+        actions={TOOLBAR_ACTIONS}
+        onAction={handleToolbarAction}
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -98,8 +115,16 @@ function StaffSettlementsContent() {
         </div>
       ) : (
         <>
-          <SettlementTable rows={data?.data ?? []} actions={rowActionsFor} onRowAction={handleRowAction} />
-          <Pagination page={page} totalPages={data?.totalPages ?? 1} onPageChange={handlePageChange} />
+          <SettlementTable
+            rows={data?.data ?? []}
+            actions={rowActionsFor}
+            onRowAction={handleRowAction}
+          />
+          <Pagination
+            page={page}
+            totalPages={data?.totalPages ?? 1}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>
